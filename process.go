@@ -8,7 +8,7 @@ import (
 
 // IProcess is an interface around the FFMPEG process
 type IProcess interface {
-	Spawn(path, URI string) *exec.Cmd
+	Spawn(path, URI string, options map[string]string) *exec.Cmd
 }
 
 // ProcessLoggingOpts describes options for process logging
@@ -47,7 +47,7 @@ func (p Process) getHLSFlags() string {
 }
 
 // Spawn creates a new FFMPEG cmd
-func (p Process) Spawn(path, URI string) *exec.Cmd {
+func (p Process) Spawn(path, URI string, options map[string]string) *exec.Cmd {
 	os.MkdirAll(path, os.ModePerm)
 	processCommands := []string{
 		"-y",
@@ -68,17 +68,10 @@ func (p Process) Spawn(path, URI string) *exec.Cmd {
 	if p.audio {
 		processCommands = append(processCommands, "-an")
 	}
+	for k, v := range options {
+		processCommands = append(processCommands, k, v)
+	}
 	processCommands = append(processCommands,
-		"-hls_flags",
-		p.getHLSFlags(),
-		"-f",
-		"hls",
-		"-segment_list_flags",
-		"live",
-		"-hls_time",
-		"1",
-		"-hls_list_size",
-		"3",
 		"-hls_segment_filename",
 		fmt.Sprintf("%s/%%d.ts", path),
 		fmt.Sprintf("%s/index.m3u8", path),

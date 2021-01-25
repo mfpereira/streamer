@@ -43,6 +43,7 @@ type Stream struct {
 // Type check
 var _ IStream = (*Stream)(nil)
 
+// Go map options := map[string]string{ "-hls_flags":"append_list", "-f":"hls", "-segment_list_flags": "live", "-hls_time": "1", "-hls_list_size": "3" };
 // NewStream creates a new transcoding process for ffmpeg
 func NewStream(
 	URI string,
@@ -51,6 +52,7 @@ func NewStream(
 	audio bool,
 	loggingOpts ProcessLoggingOpts,
 	waitTimeOut time.Duration,
+	options map[string]string,
 ) (*Stream, string) {
 	id := uuid.New().String()
 	path := fmt.Sprintf("%s/%s", storingDirectory, id)
@@ -60,7 +62,7 @@ func NewStream(
 		return nil, ""
 	}
 	process := NewProcess(keepFiles, audio)
-	cmd := process.Spawn(path, URI)
+	cmd := process.Spawn(path, URI, options)
 
 	// Create nil pointer in case logging is not enabled
 	cmdLogger := (*lumberjack.Logger)(nil)
